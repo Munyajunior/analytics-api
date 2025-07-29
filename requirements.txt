@@ -1,0 +1,7 @@
+fastapi[stanadard]
+pydantic
+uvicorn
+gunicorn
+sqlmodel
+sqlalchemy
+timescaledb
