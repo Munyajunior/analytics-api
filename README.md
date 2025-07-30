@@ -5,6 +5,11 @@ Own your data pipeline
 
 ## Docker
 
-`docker build -t analytics-api -f Dockerfile .`
+`docker build -t analytics_api -f Dockerfile .`
 
-`docker run analytics-api`
+`docker run analytics_api`
+
+### build with poetry as package manager
+`docker build -t analytics_api_poetry -f Dockerfile.poetry .`
+
+`docker run analytics_api_poetry`
