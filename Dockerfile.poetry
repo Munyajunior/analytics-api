@@ -12,11 +12,11 @@ ENV POETRY_HOME="/opt/poetry"
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-RUN python3 -m pip install --user pipx
-RUN python3 -m pipx ensurepath
+# Install Poetry via pipx (system-wide install to avoid PATH issues)
+RUN pip install --no-cache-dir pipx \
+ && pipx install poetry  \
+ && pip uninstall -y pipx
 
-# Install Poetry
-RUN pipx install poetry
 
 # Set python related environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
