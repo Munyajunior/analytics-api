@@ -31,8 +31,7 @@ RUN apt-get update && apt-get install -y \
     # for cairoSVG
     libcairo2 \
     # other
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+    gcc
 
 # Create mini vm's code directory
 RUN mkdir -p /code
@@ -49,7 +48,8 @@ COPY ./src /code
 
 
 # Install project dependencies
-RUN poetry install --no-dev --no-root # --no-dev for production images
+RUN poetry config virtualenvs.create false \
+ && poetry install --no-dev --no-root # --no-dev for production images
 
 # make the bash script executable
 COPY ./boot/docker_run_poetry.sh /opt/run.sh

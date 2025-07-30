@@ -28,8 +28,7 @@ RUN apt-get update && apt-get install -y \
     # for cairoSVG
     libcairo2 \
     # other
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+    gcc
 
 # Create mini vm's code directory
 RUN mkdir -p /code
