@@ -1,28 +1,16 @@
-# 1- Download and install python 3
+# 1. Base Image
 FROM python:3.13.2-slim-bullseye
-# Setup linux os packages
 
-# 2- Create virtual environment
-# 3- Install dependencies
-# 4- FastAPI Hello
+# 2. Environment Variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_HOME="/opt/poetry" \
+    PATH="$POETRY_HOME/bin:/root/.local/bin:$PATH" \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
 
-
-# Set environment variables for Poetry
-ENV POETRY_HOME="/opt/poetry"
-ENV POETRY_VIRTUALENVS_IN_PROJECT=true
-ENV PATH="$POETRY_HOME/bin:$PATH"
-
-# Install Poetry via pipx (system-wide install to avoid PATH issues)
-RUN pip install --no-cache-dir pipx \
- && pipx install poetry  \
- && pip uninstall -y pipx
-
-
-# Set python related environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install os dependencies for our mini vm
+# 3. Install OS-Level Dependencies
 RUN apt-get update && apt-get install -y \
     # for postgress
     libpq-dev \
@@ -31,36 +19,29 @@ RUN apt-get update && apt-get install -y \
     # for cairoSVG
     libcairo2 \
     # other
-    gcc
-
-# Create mini vm's code directory
-RUN mkdir -p /code
-
-# Set the working directory
-WORKDIR /code
-
-
-# Copy Poetry configuration files
-COPY pyproject.toml poetry.lock ./
-
-# copy the project code into the container's working directory'
-COPY ./src /code
-
-
-# Install project dependencies
-RUN poetry config virtualenvs.create false \
- && poetry install --no-dev --no-root # --no-dev for production images
-
-# make the bash script executable
-COPY ./boot/docker_run_poetry.sh /opt/run.sh
-RUN chmod +x /opt/run.sh
-
-# Clean up apt cache to reduce image size
-RUN apt-get remove --purge -y \
-    && apt-get autoremove -y \
+    gcc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Run the FastAPI project via the runtime script
-# when the container starts
+# 4. Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+
+# 5. Create working directory
+WORKDIR /code
+
+# 6. Copy Poetry config files first (for layer caching)
+COPY pyproject.toml poetry.lock ./
+
+# 7. Install Python dependencies via Poetry (no dev deps, no editable mode)
+RUN poetry config virtualenvs.create false \
+ && poetry install --no-dev --no-root
+
+# 8. Copy actual source code into image
+COPY ./src /code
+
+# 9. Copy startup script and make it executable
+COPY ./boot/docker_run_poetry.sh /opt/run.sh
+RUN chmod +x /opt/run.sh
+
+# 10. Runtime command
 CMD ["/opt/run.sh"]
