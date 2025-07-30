@@ -12,8 +12,11 @@ ENV POETRY_HOME="/opt/poetry"
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
+RUN python3 -m pip install --user pipx
+RUN python3 -m pipx ensurepath
+
 # Install Poetry
-RUN pip install "poetry==1.8.2" # Pin to a specific Poetry version
+RUN pipx install poetry
 
 # Set python related environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -49,7 +52,7 @@ COPY ./src /code
 RUN poetry install --no-dev --no-root # --no-dev for production images
 
 # make the bash script executable
-COPY ./boot/docker_run.sh /opt/run.sh
+COPY ./boot/docker_run_poetry.sh /opt/run.sh
 RUN chmod +x /opt/run.sh
 
 # Clean up apt cache to reduce image size
